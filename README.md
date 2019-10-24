@@ -7,9 +7,9 @@
  These images show the normal case of the chat room. 
 
 - Clients chat an
- ![Command history](./Fall 2019 Network/ClientA.png)
+ ![ClientA](C:\Courses at Vandy\Fall 2019 Network\ClientA.png)
 
 - Clients chat binh
-  ![After 10](./Fall 2019 Network/ClientB.png)
+  ![ClientB](C:\Courses at Vandy\Fall 2019 Network\ClientB.png)
 
 
