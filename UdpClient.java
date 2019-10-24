@@ -29,7 +29,7 @@ public class UdpClient {
 
     String status = messageServer[1].substring(messageServer[1].indexOf("=") + 1);
     while (status.equals("1")) {
-      // repromt
+      // re-promt
       System.out.print("Username: ");
       name = scnr.nextLine();
       response = "TYPE=JOIN;USERNAME=" + name;
@@ -43,39 +43,47 @@ public class UdpClient {
       status = messageServer[1].substring(messageServer[1].indexOf("=") + 1);      
     }
 
+    // make final for thread
     final String name2 = name;
+  
+    // thread to receive response from server
     new Thread(
       new Runnable(){
         @Override
         public void run() {
           // receive response
-          try {
-            DatagramPacket packet = receiveResponse();
-            String ServerMes = new String (packet.getData(), 0, packet.getLength());
+          while (true) {
+            try {
+              mPacketBuffer = new byte[BUFFER_SIZE];
+              DatagramPacket receive = receiveResponse();
+              String ServerMes = new String (receive.getData(), 0, receive.getLength());
 
-            //FIXME
-            System.out.println(ServerMes);
-            String[] messageServer = ServerMes.split(";");
-  
-            System.out.println("RECEIVED");
-            String type = messageServer[0];
-            int equalInd = type.indexOf("=");
-            String op = type.substring(equalInd + 1);
+              // LOgging to help debug
+              // System.out.println(ServerMes);
+              String[] messageServer = ServerMes.split(";");
     
-            if (op.equals("NEWMESSAGE")) {
-              String username = messageServer[1].substring(messageServer[1].indexOf("=") + 1);
-              if (!username.equals(name2)) {
-    
-                System.out.println(username + ": " + messageServer[2].substring(messageServer[2].indexOf("=") + 1));
+              // System.out.println("RECEIVED");
+              String type = messageServer[0];
+              int equalInd = type.indexOf("=");
+              String op = type.substring(equalInd + 1);
+      
+              if (op.equals("NEWMESSAGE")) {
+                String username = messageServer[1].substring(messageServer[1].indexOf("=") + 1);
+                // System.out.println(username);
+                if (!username.equals(name2)) {
+      
+                  System.out.println(username + ": " + messageServer[2].substring(messageServer[2].indexOf("=") + 1));
+                }
               }
-            }
             }catch(IOException e) {
-              e.printStackTrace();
+                e.printStackTrace();
             }
           }
+        }
       }
     ).start();
-    
+
+    // sending packets
     while (!mes.equals("q")) {
       mes = scnr.nextLine();
 
