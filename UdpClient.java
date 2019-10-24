@@ -12,9 +12,83 @@ public class UdpClient {
 
   public static void main(String[] args) throws IOException {
     mSocket = new DatagramSocket();
+
+    System.out.print("Username: ");
+    Scanner scnr = new Scanner(System.in);
+
+    String name = scnr.nextLine();
+    String mes = name;    
+    String response = "TYPE=JOIN;USERNAME=" + name;
+    mPacketBuffer = response.getBytes();
     sendRequest();
+
+    // response
     DatagramPacket packet = receiveResponse();
-    displayResults(packet);
+    String ServerMes = new String (packet.getData(), 0, packet.getLength());
+    String[] messageServer = ServerMes.split(";");
+
+    String status = messageServer[1].substring(messageServer[1].indexOf("=") + 1);
+    while (status.equals("1")) {
+      // repromt
+      System.out.print("Username: ");
+      name = scnr.nextLine();
+      response = "TYPE=JOIN;USERNAME=" + name;
+      mPacketBuffer = response.getBytes();
+      sendRequest();
+      packet = receiveResponse();
+
+      ServerMes = new String (packet.getData(), 0, packet.getLength());
+      messageServer = ServerMes.split(";");
+  
+      status = messageServer[1].substring(messageServer[1].indexOf("=") + 1);      
+    }
+
+    final String name2 = name;
+    new Thread(
+      new Runnable(){
+        @Override
+        public void run() {
+          // receive response
+          try {
+            DatagramPacket packet = receiveResponse();
+            String ServerMes = new String (packet.getData(), 0, packet.getLength());
+
+            //FIXME
+            System.out.println(ServerMes);
+            String[] messageServer = ServerMes.split(";");
+  
+            System.out.println("RECEIVED");
+            String type = messageServer[0];
+            int equalInd = type.indexOf("=");
+            String op = type.substring(equalInd + 1);
+    
+            if (op.equals("NEWMESSAGE")) {
+              String username = messageServer[1].substring(messageServer[1].indexOf("=") + 1);
+              if (!username.equals(name2)) {
+    
+                System.out.println(username + ": " + messageServer[2].substring(messageServer[2].indexOf("=") + 1));
+              }
+            }
+            }catch(IOException e) {
+              e.printStackTrace();
+            }
+          }
+      }
+    ).start();
+    
+    while (!mes.equals("q")) {
+      mes = scnr.nextLine();
+
+      // send a post 
+      response = "TYPE=POST;TOKEN=" + name + ";MESSAGE=" + mes;
+      mPacketBuffer = response.getBytes();
+      sendRequest();
+    }
+
+    // leave
+    response = "TYPE=LEAVE;TOKEN=" + name;
+    mPacketBuffer = response.getBytes();
+    sendRequest();
     mSocket.close();
   }
 
@@ -28,11 +102,11 @@ public class UdpClient {
     DatagramPacket packet = new DatagramPacket(mPacketBuffer, mPacketBuffer.length);
     mSocket.receive(packet);
 
-    InetAddress serverAddress = packet.getAddress();
-    int serverPort = packet.getPort();
+    // InetAddress serverAddress = packet.getAddress();
+    // int serverPort = packet.getPort();
 
-    System.out.println("Host: " + serverAddress);
-    System.out.println("Port: " + serverPort);
+    // System.out.println("Host: " + serverAddress);
+    // System.out.println("Port: " + serverPort);
 
     return packet;
   }
