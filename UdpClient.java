@@ -17,6 +17,7 @@ public class UdpClient {
     Scanner scnr = new Scanner(System.in);
 
     String name = scnr.nextLine();
+    name = name.trim();
     String mes = name;    
     String response = "TYPE=JOIN;USERNAME=" + name;
     mPacketBuffer = response.getBytes();
@@ -25,22 +26,29 @@ public class UdpClient {
     // response
     DatagramPacket packet = receiveResponse();
     String ServerMes = new String (packet.getData(), 0, packet.getLength());
+    
+    // Print test
+    // System.out.println(ServerMes);
     String[] messageServer = ServerMes.split(";");
 
-    String status = messageServer[1].substring(messageServer[1].indexOf("=") + 1);
-    while (status.equals("1")) {
+    String status = messageServer[1];
+    // System.out.println(status);
+    while (status.equals("STATUS=1")) {
       // re-promt
       System.out.print("Username: ");
       name = scnr.nextLine();
       response = "TYPE=JOIN;USERNAME=" + name;
       mPacketBuffer = response.getBytes();
       sendRequest();
+
+      // receive from server
+      // mPacketBuffer = new byte[BUFFER_SIZE]; IMPORTANT TO BE NEW BYTE
       packet = receiveResponse();
 
       ServerMes = new String (packet.getData(), 0, packet.getLength());
       messageServer = ServerMes.split(";");
   
-      status = messageServer[1].substring(messageServer[1].indexOf("=") + 1);      
+      status = messageServer[1];      
     }
 
     // make final for thread
@@ -107,6 +115,7 @@ public class UdpClient {
   }
 
   private static DatagramPacket receiveResponse() throws IOException {
+    mPacketBuffer = new byte[BUFFER_SIZE];
     DatagramPacket packet = new DatagramPacket(mPacketBuffer, mPacketBuffer.length);
     mSocket.receive(packet);
 
@@ -119,8 +128,8 @@ public class UdpClient {
     return packet;
   }
 
-  private static void displayResults(DatagramPacket packet) {
-    String received = new String(packet.getData(), 0, packet.getLength());
-    System.out.println("Here's what I got: " + received);
-  }
+  // private static void displayResults(DatagramPacket packet) {
+  //   String received = new String(packet.getData(), 0, packet.getLength());
+  //   System.out.println("Here's what I got: " + received);
+  // }
 }

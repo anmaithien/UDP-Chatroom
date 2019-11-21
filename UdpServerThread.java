@@ -57,19 +57,15 @@ public class UdpServerThread extends Thread {
           String name = mes[1].substring(mes[1].indexOf("=") + 1);
 
           if (str.containsKey(name)) {
-            // System.out.println("a");
-            responsString += "TYPE=JOINRESPONSE;STATUS=1;MESSAGE=error"; 
+            responsString = "TYPE=JOINRESPONSE;STATUS=1;MESSAGE=error"; 
           }else {
-            // System.out.println("b");
             str.put(name, new User(clientPacket.getAddress(), clientPacket.getPort()));
-            responsString += "TYPE=JOINRESPONSE;STATUS=0;MESSAGE=success"; 
+            responsString = "TYPE=JOINRESPONSE;STATUS=0;MESSAGE=success"; 
           }
-
         }else if (op.equals("POST")) {
           String name = mes[1].substring(mes[1].indexOf("=") + 1);
           String message = mes[2].substring(mes[2].indexOf("=") + 1);
-          responsString += "TYPE=NEWMESSAGE;USERNAME=" + name + ";MESSAGE=" + message;
-          System.out.println(responsString);
+          responsString = "TYPE=NEWMESSAGE;USERNAME=" + name + ";MESSAGE=" + message;
           byte[] bBuffer = responsString.getBytes(); 
 
           str.forEach((key, value) -> {
@@ -89,10 +85,13 @@ public class UdpServerThread extends Thread {
           String name = mes[1].substring(mes[1].indexOf("=") + 1);
           str.remove(name);
 
-          responsString += "TYPE=BYE";
+          responsString = "TYPE=BYE";
         }
         
-        // post already send to all
+        // print out string to send to client
+        System.out.println(responsString);
+
+        // send message back to client
         if (!op.equals("POST")) {
           // System.out.println("SENT");
           byteBuffer = responsString.getBytes();
